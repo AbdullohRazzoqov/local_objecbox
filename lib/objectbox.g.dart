@@ -22,7 +22,7 @@ final _entities = <ModelEntity>[
   ModelEntity(
       id: const IdUid(1, 775350477529082142),
       name: 'User',
-      lastPropertyId: const IdUid(3, 4091330310870755836),
+      lastPropertyId: const IdUid(4, 6416333748431408669),
       flags: 0,
       properties: <ModelProperty>[
         ModelProperty(
@@ -39,6 +39,11 @@ final _entities = <ModelEntity>[
             id: const IdUid(3, 4091330310870755836),
             name: 'date',
             type: 10,
+            flags: 0),
+        ModelProperty(
+            id: const IdUid(4, 6416333748431408669),
+            name: 'age',
+            type: 6,
             flags: 0)
       ],
       relations: <ModelRelation>[],
@@ -87,12 +92,12 @@ ModelDefinition getObjectBoxModel() {
           object.id = id;
         },
         objectToFB: (User object, fb.Builder fbb) {
-          final nameOffset =
-              object.name == null ? null : fbb.writeString(object.name!);
-          fbb.startTable(4);
+          final nameOffset = fbb.writeString(object.name);
+          fbb.startTable(5);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, nameOffset);
           fbb.addInt64(2, object.date?.millisecondsSinceEpoch);
+          fbb.addInt64(3, object.age);
           fbb.finish(fbb.endTable());
           return object.id;
         },
@@ -101,13 +106,14 @@ ModelDefinition getObjectBoxModel() {
           final rootOffset = buffer.derefObject(0);
           final dateValue =
               const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 8);
-          final object = User()
-            ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0)
-            ..name = const fb.StringReader(asciiOptimization: true)
-                .vTableGetNullable(buffer, rootOffset, 6)
-            ..date = dateValue == null
-                ? null
-                : DateTime.fromMillisecondsSinceEpoch(dateValue);
+          final object = User(
+              name: const fb.StringReader(asciiOptimization: true)
+                  .vTableGet(buffer, rootOffset, 6, ''),
+              age: const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0),
+              date: dateValue == null
+                  ? null
+                  : DateTime.fromMillisecondsSinceEpoch(dateValue))
+            ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
 
           return object;
         })
@@ -126,4 +132,7 @@ class User_ {
 
   /// see [User.date]
   static final date = QueryIntegerProperty<User>(_entities[0].properties[2]);
+
+  /// see [User.age]
+  static final age = QueryIntegerProperty<User>(_entities[0].properties[3]);
 }
